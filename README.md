@@ -1,41 +1,90 @@
-# Language Translator
+# Language Translator Web App
 
-A simple command-line application for translating text between different languages using the Google Cloud Translate API.
+A modern web application for translating text and documents between multiple languages using the Google Cloud Translate API.
 
-## Setup
+## Features
 
-1. Make sure you have Python installed on your system
-2. Install the required dependencies:
+- Text translation between multiple languages
+- PDF and DOCX file translation
+- Drag and drop file upload
+- Clean and intuitive interface
+- Support for multiple target languages:
+  - English
+  - Spanish
+  - French
+  - German
+  - Portuguese
+
+## Prerequisites
+
+- Python 3.9 or higher
+- Google Cloud API Key
+- Windows operating system (for the provided setup script)
+
+## Installation
+
+### Windows Setup
+
+1. Download or clone this repository
+2. Open PowerShell as Administrator
+3. Navigate to the project directory
+4. Run the setup script:
+   ```powershell
+   .\setup.ps1
    ```
-   pip install -r requirements.txt
+5. The script will:
+   - Install Python dependencies
+   - Create a virtual environment
+   - Set up the configuration files
+   - Create a startup script
+
+6. Edit the `.env` file and add your Google API key:
    ```
-3. The application uses the Google Cloud API key from the `.env` file
+   GOOGLE_API_KEY=your_api_key_here
+   ```
+
+## Running the Application
+
+### Windows
+Simply run the created `start.bat` script:
+```powershell
+.\start.bat
+```
+
+The application will be available at:
+- http://localhost:5000
 
 ## Usage
 
-Run the application using:
-```
-python translator.py
-```
+### Text Translation
+1. Enter the text you want to translate in the text area
+2. Select the target language
+3. Click "Translate Text"
+4. The translated text will appear in the result area
 
-The application will present you with a menu where you can:
-1. Translate text to any supported language
-2. Exit the application
+### File Translation
+1. Click "Choose File" or drag and drop a PDF or DOCX file
+2. Select the target language
+3. Click "Translate File"
+4. The translated file will be downloaded automatically
 
-When translating, you'll need to provide:
-- The text you want to translate
-- The target language code (e.g., 'es' for Spanish, 'fr' for French, 'pt' for Portuguese)
+## Supported File Formats
+- PDF (.pdf)
+- Microsoft Word (.docx)
 
-## Supported Languages
+## Notes
+- The maximum file size is limited by Flask's default configuration (16MB)
+- The translated file will be saved as a DOCX file
+- Basic text formatting is preserved in the translation
 
-The application supports all languages available in the Google Translate API. Some common language codes:
-- English: 'en'
-- Spanish: 'es'
-- French: 'fr'
-- German: 'de'
-- Portuguese: 'pt'
-- Italian: 'it'
-- Russian: 'ru'
-- Chinese (Simplified): 'zh'
-- Japanese: 'ja'
-- Korean: 'ko' 
+## Troubleshooting
+
+If you encounter any issues:
+
+1. Make sure Python is installed and in your system PATH
+2. Verify your Google API key is correct in the `.env` file
+3. Check that all dependencies are installed correctly
+4. Ensure you have sufficient permissions to run the scripts
+
+## License
+This project is licensed under the MIT License - see the LICENSE file for details. 
