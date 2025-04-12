@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Translator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .file-upload {
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .file-upload.dragover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0">Language Translator</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Text Translation Form -->
+                        <form id="translationForm" class="mb-4">
+                            <div class="mb-3">
+                                <label for="text" class="form-label">Text to Translate</label>
+                                <textarea class="form-control" id="text" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="target_language" class="form-label">Target Language</label>
+                                <select class="form-select" id="target_language" required>
+                                    {% for code, lang in languages.items() %}
+                                    <option value="{{ lang.code }}">{{ lang.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Translate Text</button>
+                        </form>
+
+                        <hr>
+
+                        <!-- File Translation Form -->
+                        <form id="fileTranslationForm" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="file" class="form-label">Upload PDF or DOCX File</label>
+                                <div class="file-upload" id="dropZone">
+                                    <input type="file" class="form-control" id="file" name="file" accept=".pdf,.docx" required>
+                                    <p class="mt-2 mb-0">or drag and drop files here</p>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="file_target_language" class="form-label">Target Language</label>
+                                <select class="form-select" id="file_target_language" name="target_language" required>
+                                    {% for code, lang in languages.items() %}
+                                    <option value="{{ lang.code }}">{{ lang.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Translate File</button>
+                        </form>
+
+                        <div class="mt-3">
+                            <h5>Translation Result:</h5>
+                            <div id="result" class="alert alert-info"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Text translation
+        document.getElementById('translationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const text = document.getElementById('text').value;
+            const target_language = document.getElementById('target_language').value;
+            
+            try {
+                const response = await fetch('/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text, target_language })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('result').textContent = data.translated_text;
+                } else {
+                    document.getElementById('result').textContent = 'Error: ' + data.error;
+                }
+            } catch (error) {
+                document.getElementById('result').textContent = 'Error: ' + error.message;
+            }
+        });
+
+        // File translation
+        document.getElementById('fileTranslationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch('/translate_file', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    // Download the translated file
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = response.headers.get('Content-Disposition').split('filename=')[1];
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    document.getElementById('result').textContent = 'File translated successfully!';
+                } else {
+                    const data = await response.json();
+                    document.getElementById('result').textContent = 'Error: ' + data.error;
+                }
+            } catch (error) {
+                document.getElementById('result').textContent = 'Error: ' + error.message;
+            }
+        });
+
+        // Drag and drop functionality
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('file');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('dragover');
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+        }
+    </script>
+</body>
+</html> 
